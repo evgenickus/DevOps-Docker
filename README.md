@@ -1,68 +1,81 @@
-### Выводим информацию о версии операционных систем
-## *cat /etc/\*release\**
-#### На виртуальной машине А: 
+Создать Docker Compose скрипт для развертки кластера из трех инстансов cassandra, причем каждый из них должен быть доступен из основной (локальной) сети по отдельному ip адресу.
+
+# Задание
+1. На машине А (ubuntu 24.04 lts) в локальной сети с ip 192.168.1.197 запускается скрипт docker-compose для поднятия 3 образов с ip адресами 192.168.1.200-202.
+2. Затем с машины Б (ubuntu 24.04 lts) из той же локальной сети с ip 192.168.1.198 необходимо подключиться через cqlsh к каждой из машин-образов.
+3. Настроить ssh для возможности подключения к 1.200 с 1.197
+4. Все приведённые операции необходимо задокументировать и описать инструкцией с командами и объяснениями в Readme
+5. Добавить скриншот результата в Readme.
+
+
+# Решение
+
+### Выводим информацию о версии операционных систем:
+## *<span style="color:blue">cat /etc/\*release\*</span>*
+#### На server-A
 ![alt text](./images/ver-A.png)
 
-
-#### На виртуальной машине B:
+#### На server-B
 ![alt text](./images/ver-B.png)
 
-### Выводим информацию о адресе машин в локальной сети
-## *ip a show enp0s8*
-#### На виртуальной машине А: 
+### Выводим информацию об адресе машин в локальной сети:
+## *<span style="color:blue">ip a show enp0s8</span>*
+#### На server-A
 ![alt text](./images/ipaddr-A.png)
-#### На виртуальной машине B:
+#### На server-B
 ![alt text](./images/ipaddr-B.png)
 
-### Теперь на сервере А выполним запуск файла docker-compose.yml который выполнит установку трех
-### docker контейнеров с базой данных Cassandra, имеющих сетевые адреса: *192.168.1.200, 192.168.1.201, 192.168.1.202*
-## *docker-compose up -d*
+### Теперь на server-А выполним запуск файла docker-compose.yml который выполнит установку трех docker контейнеров с базой данных Cassandra, имеющих сетевые адреса: *<span style="color:blue">192.168.1.200, 192.168.1.201, 192.168.1.202</span>*
+### Запускаем командой:
+## <span style="color:blue">*docker-compose up -d*</span>
 ![alt text](./images/dc-up.png)
 
-### Проверяем что контейнеры работают
-## *docker ps*
+### Проверяем что контейнеры работают:
+## *<span style="color:blue">docker ps</span>*
 ![alt text](./images/d-ps.png)
 
-### Выводим информаци о сетевых адресах запущенных контейнеров
-## *docker network inspect test_clusternet*
+### Выводим информацию о сетевых адресах запущенных контейнеров:
+## *<span style="color:blue">docker network inspect test_clusternet</span>*
  ![alt text](./images/network.png)
 
-### Далее подключаемся с сервера B к каждому контейнеру через утилиту cqlsh
-## *cqlsh 192.168.1.200*
+### Далее подключаемся с server-B к каждому контейнеру через сqlsh:
+## *<span style="color:blue">cqlsh 192.168.1.200</span>*
 ![alt text](./images/cqlsh200.png)
-## *cqlsh 192.168.1.201*
+## *<span style="color:blue">cqlsh 192.168.1.201</span>*
 ![alt text](./images/cqlsh201.png)
-## *cqlsh 192.168.1.202*
+## *<span style="color:blue">cqlsh 192.168.1.202</span>*
 ![alt text](./images/cqlsh202.png)
 
-### Теперь необходимо настроить SSH сервер внутри контейнера с IP адресом *192.168.1.200*
-### Для это вначале выполним обновление и установку необходимых пакетов
-## *docker exec -it cassandra_01 apt update*
-## *docker exec -it cassandra_01 apt install -y ssh*
-### Установим пароль для пользователя root
-## *docker exec -it cassandra_01 passwd*
+### Все подключения выполнены успешно
+
+### Теперь необходимо настроить SSH сервер внутри контейнера с IP адресом *<span style="color:blue">192.168.1.200</span>*
+### Для это вначале выполним обновление и установку необходимых пакетов:
+## *<span style="color:blue">docker exec -it cassandra_01 apt update</span>*
+## *<span style="color:blue">docker exec -it cassandra_01 apt install -y ssh</span>*
+### Установим пароль для пользователя root:
+## *<span style="color:blue">docker exec -it cassandra_01 passwd</span>*
 ![alt text](./images/passwd.png)
 
-### Далее подключимся к контейнеру и разрешим соединение по  SSH для пользователя root
-## *docker exec -it cassandra_01 bash*
-## *echo PermitRootLogin yes >> /etc/ssh/sshd_config*
+### Далее подключимся к контейнеру и разрешим соединение по SSH для пользователя root:
+## *<span style="color:blue">docker exec -it cassandra_01 bash</span>*
+## *<span style="color:blue">echo PermitRootLogin yes >> /etc/ssh/sshd_config</span>*
 ![alt text](./images/sshd_config.png)
 
-### Запускаем службу SSH внутри контейнера
-## *docker exec -it cassandra_01 /etc/init.d/ssh start*
+### Запускаем службу SSH внутри контейнера:
+## *<span style="color:blue">docker exec -it cassandra_01 /etc/init.d/ssh start</span>*
 ![alt text](./images/ssh_start.png)
 
 
-### Для обеспечения сетевой доступности с контейнером имеющим IP адрес *192.168.1.200* необходимо добавить
-### сетевой маршрут интерфейсу *br-28de1fe84ef6* 
+### Для обеспечения сетевой доступности с контейнером имеющим IP адрес *<span style="color:blue">192.168.1.200* необходимо на server-А добавить сетевой маршрут интерфейсу *<span style="color:blue">br-28de1fe84ef6</span>* 
 ![alt text](./images/ipa.png)
 ### Запускаем команду:
-## *sudo ip route add 192.168.1.200/32 dev br-28de1fe84ef6*
-### Проверяем что маршрут добавлен
-## *ip route*
+## *<span style="color:blue">sudo ip route add 192.168.1.200/32 dev br-28de1fe84ef6</span>*
+### Проверяем что маршрут добавлен:
+## *<span style="color:blue">ip route</span>*
 ![alt text](./images/iproutes.png) <!-- ip route -->
 
-
-## *ssh root@192.168.1.200*
+### Выполняем подключение по протоколу SSH:
+## *<span style="color:blue">ssh <span style="color:blue">root</span>@192.168.1.200</span>*
 ![alt text](./images/ssh.png)
 
+### Подключение выполнено успешно
