@@ -26,6 +26,7 @@
 ![alt text](./images/ipaddr-B.png)
 
 ### Теперь на server-А выполним запуск файла docker-compose.yml который выполнит установку трех docker контейнеров с базой данных Cassandra, имеющих сетевые адреса: *<span style="color:blue">192.168.1.200, 192.168.1.201, 192.168.1.202</span>*
+### Для контейнера с именем cassandra_01 и IP 192.168.1.200 будет создан кастомный образ с именем test-cassandra-0 в котором сразу будет настроен SSH сервер и создан пользователь
 ### Запускаем командой:
 ## <span style="color:blue">*docker-compose up -d*</span>
 ![alt text](./images/dc-up.png)
@@ -36,8 +37,7 @@
 
 ### Выводим информацию о сетевых адресах запущенных контейнеров:
 ## *<span style="color:blue">docker network inspect test_clusternet</span>*
- ![alt text](./images/network.png)
-
+![alt text](./images/network.png)
 ### Далее подключаемся с server-B к каждому контейнеру через сqlsh:
 ## *<span style="color:blue">cqlsh 192.168.1.200</span>*
 ![alt text](./images/cqlsh200.png)
@@ -48,34 +48,18 @@
 
 ### Все подключения выполнены успешно
 
-### Теперь необходимо настроить SSH сервер внутри контейнера с IP адресом *<span style="color:blue">192.168.1.200</span>*
-### Для это вначале выполним обновление и установку необходимых пакетов:
-## *<span style="color:blue">docker exec -it cassandra_01 apt update</span>*
-## *<span style="color:blue">docker exec -it cassandra_01 apt install -y ssh</span>*
-### Установим пароль для пользователя root:
-## *<span style="color:blue">docker exec -it cassandra_01 passwd</span>*
-![alt text](./images/passwd.png)
-
-### Далее подключимся к контейнеру и разрешим соединение по SSH для пользователя root:
-## *<span style="color:blue">docker exec -it cassandra_01 bash</span>*
-## *<span style="color:blue">echo PermitRootLogin yes >> /etc/ssh/sshd_config</span>*
-![alt text](./images/sshd_config.png)
-
-### Запускаем службу SSH внутри контейнера:
-## *<span style="color:blue">docker exec -it cassandra_01 /etc/init.d/ssh start</span>*
-![alt text](./images/ssh_start.png)
-
-
-### Для обеспечения сетевой доступности с контейнером имеющим IP адрес *<span style="color:blue">192.168.1.200* необходимо на server-А добавить сетевой маршрут интерфейсу *<span style="color:blue">br-28de1fe84ef6</span>* 
-![alt text](./images/ipa.png)
-### Запускаем команду:
-## *<span style="color:blue">sudo ip route add 192.168.1.200/32 dev br-28de1fe84ef6</span>*
+### Для обеспечения сетевой доступности с контейнером имеющим IP адрес *<span style="color:blue">192.168.1.200* необходимо на server-А добавить сетевой маршрут
+### Для этого запустим скрипт командой:
+## *<span style="color:blue">sudo ./add_route_script.sh</span>*
 ### Проверяем что маршрут добавлен:
 ## *<span style="color:blue">ip route</span>*
-![alt text](./images/iproutes.png) <!-- ip route -->
+![alt text](./images/iproutes.png)
+
+### Для подключения по SSH ключу нам нужно скопировать в текущую директорию файл с публичным ключом пользователя:
+## *<span style="color:blue">cp ~/.ssh/id_rsa.pub ./</span>*
 
 ### Выполняем подключение по протоколу SSH:
-## *<span style="color:blue">ssh <span style="color:blue">root</span>@192.168.1.200</span>*
+## *<span style="color:blue">ssh <span style="color:blue">evgeniy</span>@192.168.1.200</span>*
 ![alt text](./images/ssh.png)
 
 ### Подключение выполнено успешно

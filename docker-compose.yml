@@ -1,6 +1,8 @@
 services:
   cassandra-0:
-    image: cassandra:latest
+    build:
+      context: .
+      dockerfile: Dockerfile
     container_name: cassandra_01
     restart: always
     volumes:
